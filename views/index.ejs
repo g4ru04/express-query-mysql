@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Query MYSQL</title>
+    <script src="./javascripts/jquery-1.12.4.min.js"></script>
+    <style>
+      #result {
+        border-collapse: collapse;
+        border-spacing: 0px;
+      }
+      #result td,th{
+        padding: 5px;
+        border: 1px solid #888;
+      }
+      #result td{
+        text-align: right;
+      }
+    </style>
+    <script>
+
+      function generateTableHead(table, data) {
+        let thead = table.createTHead();
+        let row = thead.insertRow();
+        for (let key of data) {
+          let th = document.createElement("th");
+          let text = document.createTextNode(key);
+          th.appendChild(text);
+          row.appendChild(th);
+        }
+      }
+      
+      function generateTable(table, data) {
+        for (let element of data) {
+          let row = table.insertRow();
+          for (key in element) {
+            let cell = row.insertCell();
+            let text = document.createTextNode(element[key]);
+            cell.appendChild(text);
+          }
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h2>
+      Query MYSQL
+    </h2>
+    <input type="text" style="height:40px;width:400px;" id="raw_query" placeholder="輸入 MYSQL RAW QUERY" />
+    <br>
+    <input type="button" id="send" value="送出"/>
+    <pre>
+      
+ex:
+SHOW tables;
+SELECT * FROM test_for_audrey LIMIT 10;
+UPDATE test_for_audrey SET `date`='10000' WHERE id = 1;
+DELETE FROM test_for_audrey WHERE id = 1;
+INSERT INTO `test_for_audrey` (`id`, `Date`, `Price`, `Open`, `High`, `Low`, `Vol`, `Change`) VALUES (1,'Date', '123', '123', '123', '123', '123', '123');
+    </pre>
+    <table id="result"></table>
+    <script>
+      function send_query(){
+        $("#result").html("### LOADING~~~ ###");
+        $.ajax({
+          method: "POST",
+          url: "query",
+          data: { query: $("#raw_query").val() },
+          success: (result)=>{
+            $("#result").html("");
+            if(!Array.isArray(result)){
+              result = [result];
+            }
+            
+            let table = document.querySelector("#result");
+            let data = Object.keys(result[0]||{});
+            console.log(result);
+            generateTableHead(table, data);
+            generateTable(table, result);
+            
+          }
+        });
+      }
+      $(function() {
+        console.log( "ready!" );
+        $('#raw_query').keypress(function (e) {
+          var key = e.which;
+          if(key == 13){
+            send_query();
+          }
+        });   
+        $("#send").click(function() {
+          send_query();
+        });
+        
+      });
+    </script>
+  </body>
+</html>
